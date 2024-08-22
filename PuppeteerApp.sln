@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35219.272
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PuppeteerApp", "PuppeteerApp\PuppeteerApp.csproj", "{BFC62144-CF4F-4CAD-ABC8-7D8BC42301ED}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BFC62144-CF4F-4CAD-ABC8-7D8BC42301ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFC62144-CF4F-4CAD-ABC8-7D8BC42301ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFC62144-CF4F-4CAD-ABC8-7D8BC42301ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFC62144-CF4F-4CAD-ABC8-7D8BC42301ED}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E403CD14-E9F7-4E07-A3CE-9D53C37D58D2}
+	EndGlobalSection
+EndGlobal
