@@ -1,4 +1,5 @@
-﻿using PuppeteerSharp;
+﻿using Polly;
+using PuppeteerSharp;
 
 namespace PuppeteerApp
 {
@@ -84,71 +85,87 @@ namespace PuppeteerApp
 
         public async Task<List<TableRow>> getTableData(IPage page, Program program, string competitionName)
         {
-            // Get relevant data from the table
-            await program.Sleep(400);
-            var rows = await page.QuerySelectorAllAsync(".ui-table__row");
-            var table = new List<TableRow>();
 
-            Console.WriteLine("Results for competition: " + competitionName);
-            Console.WriteLine("Found " + rows.Length + " rows.");
-            Console.WriteLine("====================================");
-
-            foreach (var row in rows)
-            {
-                var rankElement = await row.QuerySelectorAsync(".tableCellRank");
-                var rankText = await page.EvaluateFunctionAsync<string>("el => el.textContent.trim()", rankElement);
-                Console.WriteLine("Position: " + rankText);
-
-                var logoElement = await row.QuerySelectorAsync(".tableCellParticipant__image img");
-                var logoUrl = await page.EvaluateFunctionAsync<string>("el => el.src", logoElement);
-                Console.WriteLine("Logo: " + logoUrl);
-
-                var nameElement = await row.QuerySelectorAsync(".tableCellParticipant__name");
-                var nameText = await page.EvaluateFunctionAsync<string>("el => el.textContent.trim()", nameElement);
-                Console.WriteLine("Name: " + nameText);
-
-                var values = await row.QuerySelectorAllAsync(".table__cell.table__cell--value");
-
-                if(values.Length < 7)
+            var retryPolicy = Policy
+                .HandleResult<List<TableRow>>(rows => rows == null || rows.Count == 0)
+                .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(2), (result, timeSpan, retryCount, context) =>
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Not enough values in row for team: " + nameText);
+                    Console.WriteLine($"No data found for competition: {competitionName}. Retrying...");
                     Console.ResetColor();
-                    _errorMessageService.AddError("Not enough values in row for team: " + nameText);
-                    continue;
+
+                    // Avoid printing multiple error messages
+                    _errorMessageService.ClearErrors();
+                });
+
+            return await retryPolicy.ExecuteAsync(async () =>
+            {
+                // Get relevant data from the table
+                await program.Sleep(400);
+                var rows = await page.QuerySelectorAllAsync(".ui-table__row");
+                var table = new List<TableRow>();
+
+                Console.WriteLine("Results for competition: " + competitionName);
+                Console.WriteLine("Found " + rows.Length + " rows.");
+                Console.WriteLine("====================================");
+
+                foreach (var row in rows)
+                {
+                    var rankElement = await row.QuerySelectorAsync(".tableCellRank");
+                    var rankText = await page.EvaluateFunctionAsync<string>("el => el.textContent.trim()", rankElement);
+                    Console.WriteLine("Position: " + rankText);
+
+                    var logoElement = await row.QuerySelectorAsync(".tableCellParticipant__image img");
+                    var logoUrl = await page.EvaluateFunctionAsync<string>("el => el.src", logoElement);
+                    Console.WriteLine("Logo: " + logoUrl);
+
+                    var nameElement = await row.QuerySelectorAsync(".tableCellParticipant__name");
+                    var nameText = await page.EvaluateFunctionAsync<string>("el => el.textContent.trim()", nameElement);
+                    Console.WriteLine("Name: " + nameText);
+
+                    var values = await row.QuerySelectorAllAsync(".table__cell.table__cell--value");
+
+                    if (values.Length < 7)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("Not enough values in row for team: " + nameText);
+                        Console.ResetColor();
+                        _errorMessageService.AddError("Not enough values in row for team: " + nameText);
+                        continue;
+                    }
+
+                    var matchesPlayed = await page.EvaluateFunctionAsync<string>("el => el.textContent.trim()", values[0]);
+                    Console.WriteLine("Matches Played: " + matchesPlayed);
+                    var wins = await page.EvaluateFunctionAsync<string>("el => el.textContent.trim()", values[1]);
+                    Console.WriteLine("Wins: " + wins);
+                    var draws = await page.EvaluateFunctionAsync<string>("el => el.textContent.trim()", values[2]);
+                    Console.WriteLine("Draws: " + draws);
+                    var losses = await page.EvaluateFunctionAsync<string>("el => el.textContent.trim()", values[3]);
+                    Console.WriteLine("Losses: " + losses);
+                    var goalBalance = await page.EvaluateFunctionAsync<string>("el => el.textContent.trim()", values[4]);
+                    Console.WriteLine("Goal Balance: " + goalBalance);
+                    var goalDifference = await page.EvaluateFunctionAsync<string>("el => el.textContent.trim()", values[5]);
+                    Console.WriteLine("Goal Difference: " + goalDifference);
+                    var points = await page.EvaluateFunctionAsync<string>("el => el.textContent.trim()", values[6]);
+                    Console.WriteLine("Points: " + points);
+
+                    table.Add(new TableRow
+                    {
+                        Rank = rankText,
+                        LogoUrl = logoUrl,
+                        Name = nameText,
+                        MatchesPlayed = matchesPlayed,
+                        Wins = wins,
+                        Draws = draws,
+                        Losses = losses,
+                        GoalBalance = goalBalance,
+                        GoalDifference = goalDifference,
+                        Points = points
+                    }); 
                 }
 
-                var matchesPlayed = await page.EvaluateFunctionAsync<string>("el => el.textContent.trim()", values[0]);
-                Console.WriteLine("Matches Played: " + matchesPlayed);
-                var wins = await page.EvaluateFunctionAsync<string>("el => el.textContent.trim()", values[1]);
-                Console.WriteLine("Wins: " + wins);
-                var draws = await page.EvaluateFunctionAsync<string>("el => el.textContent.trim()", values[2]);
-                Console.WriteLine("Draws: " + draws);
-                var losses = await page.EvaluateFunctionAsync<string>("el => el.textContent.trim()", values[3]);
-                Console.WriteLine("Losses: " + losses);
-                var goalBalance = await page.EvaluateFunctionAsync<string>("el => el.textContent.trim()", values[4]);
-                Console.WriteLine("Goal Balance: " + goalBalance);
-                var goalDifference = await page.EvaluateFunctionAsync<string>("el => el.textContent.trim()", values[5]);
-                Console.WriteLine("Goal Difference: " + goalDifference);
-                var points = await page.EvaluateFunctionAsync<string>("el => el.textContent.trim()", values[6]);
-                Console.WriteLine("Points: " + points);
-
-                table.Add(new TableRow
-                {
-                    Rank = rankText,
-                    LogoUrl = logoUrl,
-                    Name = nameText,
-                    MatchesPlayed = matchesPlayed,
-                    Wins = wins,
-                    Draws = draws,
-                    Losses = losses,
-                    GoalBalance = goalBalance,
-                    GoalDifference = goalDifference,
-                    Points = points
-                });
-            }
-
-            return table;
+                return table;
+            }); 
         }
     }
 }

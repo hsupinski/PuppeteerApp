@@ -16,7 +16,8 @@
 
         public string getErrorsAsString()
         {
-            var connectedErrors = string.Join("\n", _errors);
+            var connectedErrors = string.Join("\n", _errors.Select(x => x + " "));
+
             ClearErrors();
             return connectedErrors;
         }

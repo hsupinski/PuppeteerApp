@@ -12,6 +12,7 @@
     <PackageReference Include="EPPlus" Version="7.3.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+    <PackageReference Include="Polly" Version="8.4.1" />
     <PackageReference Include="PuppeteerSharp" Version="19.0.1" />
   </ItemGroup>
 
