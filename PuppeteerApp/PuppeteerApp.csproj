@@ -8,11 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CsvHelper" Version="33.0.1" />
+    <PackageReference Include="EPPlus" Version="7.3.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
     <PackageReference Include="PuppeteerSharp" Version="19.0.1" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Downloads\" />
+    <Folder Include="Data\DONE\" />
+    <Folder Include="Data\STANDINGS\" />
   </ItemGroup>
 
 </Project>
